@@ -1,0 +1,30 @@
+{
+  "name": "generative-3d-music",
+  "version": "1.0.0",
+  "description": "Interactive generative 3D art project with OSC music integration",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "concurrently \"node build.js --watch\" \"node server/osc_bridge.js\"",
+    "build": "node build.js",
+    "serve": "python3 -m http.server 8000",
+    "server": "node server/osc_bridge.js"
+  },
+  "dependencies": {
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "esbuild": "^0.19.0",
+    "osc": "^2.4.4",
+    "sass": "^1.69.0",
+    "ws": "^8.14.0"
+  },
+  "keywords": [
+    "three.js",
+    "generative",
+    "music",
+    "osc"
+  ],
+  "author": "",
+  "license": "MIT"
+}
