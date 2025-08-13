@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
 export class ObjectManager {
-    constructor(sceneManager) {
+  constructor(eventBus, sceneManager) {
         this.sceneManager = sceneManager;
-        this.oscManager = null;
+        // this.oscManager = null;
         
         this.objects = new Map(); // id -> object data
         this.nextId = 1;
@@ -11,9 +11,9 @@ export class ObjectManager {
         this.initializeMaterials();
     }
 
-    setOSCManager(oscManager) {
-        this.oscManager = oscManager;
-    }
+    // setOSCManager(oscManager) {
+    //     this.oscManager = oscManager;
+    // }
 
     initializeMaterials() {
         this.materials = {
@@ -119,7 +119,7 @@ export class ObjectManager {
         this.objects.delete(id);
         
         // Send removal OSC message
-        if (this.oscManager) {
+        // if (this.oscManager) {
             this.oscManager.sendMessage('/object/removed', {
                 id: id,
                 type: objectData.type,

@@ -7,7 +7,8 @@
     "dev": "concurrently \"node build.js --watch\" \"node server/osc_bridge.js\"",
     "build": "node build.js",
     "serve": "python3 -m http.server 8000",
-    "server": "node server/osc_bridge.js"
+    "server": "node server/osc_bridge.js",
+    "test": "vitest"
   },
   "dependencies": {
     "three": "^0.160.0"
@@ -17,6 +18,7 @@
     "esbuild": "^0.19.0",
     "osc": "^2.4.4",
     "sass": "^1.69.0",
+    "vitest": "^3.2.4",
     "ws": "^8.14.0"
   },
   "keywords": [
