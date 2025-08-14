@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Interactive generative 3D art project with OSC music integration",
   "main": "src/main.js",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "scripts": {
     "dev": "concurrently \"node build.js --watch\" \"node server/osc_bridge.js\"",
     "build": "node build.js",

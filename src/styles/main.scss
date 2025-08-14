@@ -1,3 +1,5 @@
+@use 'sass:map';
+
 // Variables
 $colors: (
   'bg-primary': #1a1a1a,
@@ -46,23 +48,23 @@ $shadows: (
 
 // Helper functions
 @function color($name) {
-  @return map-get($colors, $name);
+  @return map.get($colors, $name);
 }
 
 @function spacing($name) {
-  @return map-get($spacing, $name);
+  @return map.get($spacing, $name);
 }
 
 @function border-radius($name) {
-  @return map-get($border-radius, $name);
+  @return map.get($border-radius, $name);
 }
 
 @function font-size($name) {
-  @return map-get($font-sizes, $name);
+  @return map.get($font-sizes, $name);
 }
 
 @function shadow($name) {
-  @return map-get($shadows, $name);
+  @return map.get($shadows, $name);
 }
 
 // Mixins
