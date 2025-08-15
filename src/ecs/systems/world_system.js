@@ -13,7 +13,7 @@ import { Resizer } from "../../factories/resizer.js";
 class WorldSystem extends System {
   constructor(world, container, viewCollection, eventBus) {
     super(world);
-    this.renderer = this.world.getComponent(Renderable);
+    this.renderer = this.world.getComponent(Renderable).renderer;
     this.viewCollection = viewCollection;
     // TODO: Properly handle multi-view/multi-scene worlds
     // this.camera = views.cameras.get("main");
@@ -22,7 +22,14 @@ class WorldSystem extends System {
 
     container.append(this.renderer.domElement);
     //const resizer = new Resizer(container, this.camera, this.renderer);
+    this.initialiseECSEventListeners(eventBus);
+  }
 
+  static get requiredComponents() {
+    return [Renderable, Views, ThreeClock];
+  }
+
+  initialiseECSEventListeners(eventBus) {
     eventBus.subscribe("objects:single:create", (data) => {
       const entity = this.createObject(data);
       this.scene.add(entity.mesh);
@@ -34,10 +41,6 @@ class WorldSystem extends System {
     eventBus.subscribe("view-collections:single:set", ({ viewCollection }) => {
       this.viewCollection = viewCollection;
     });
-  }
-
-  static get requiredComponents() {
-    return [Renderable, Views, ThreeClock];
   }
 
   // There are issues with Claude's code here because I think entities appear to only be added to systems
@@ -175,8 +178,8 @@ class WorldSystem extends System {
   renderViewCollection(viewCollection) {
     const viewsComp = viewCollection.getComponent(Views);
     viewsComp.views.forEach((view) => {
-      this.renderer.setViewPort(view.viewPort);
-      this.renderer.setScissor(view.viewPort);
+      this.renderer.setViewPort(view.viewport);
+      this.renderer.setScissor(view.viewport);
       this.renderer.setScissorTest(true);
       this.renderer.render(view.scene, view.camera);
     });
