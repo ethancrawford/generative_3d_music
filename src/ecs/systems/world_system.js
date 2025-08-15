@@ -1,14 +1,15 @@
+import { createCube } from "../../factories/cube.js";
+import { Resizer } from "../../factories/resizer.js";
+import { Entities } from "../components/entities.js";
+import { Renderable } from "../components/renderable.js";
+import { SceneAssignment } from "../components/scene_assignment.js";
+import { Systems } from "../components/systems.js";
+import { ThreeClock } from "../components/three_clock.js";
+import { ViewCollection } from "../components/view_collection.js";
+import { View } from "../components/view.js";
+import { Entity } from "../core/entity.js";
 import { System } from "../core/system.js";
 import { World } from "../core/world.js";
-import { Entity } from "../core/entity.js";
-import { Entities } from "../components/entities.js";
-import { Systems } from "../components/systems.js";
-import { Renderable } from "../components/renderable.js";
-import { ViewCollection } from "../components/view_collection.js";
-import { ThreeClock } from "../components/three_clock.js";
-import { createCube } from "../../factories/cube.js";
-import { SceneAssignment } from "../components/scene_assignment.js";
-import { Resizer } from "../../factories/resizer.js";
 
 class WorldSystem extends System {
   constructor(world, container, viewCollection, eventBus) {
@@ -176,12 +177,15 @@ class WorldSystem extends System {
   }
 
   renderViewCollection(viewCollection) {
-    const viewsComp = viewCollection.getComponent(Views);
-    viewsComp.views.forEach((view) => {
-      this.renderer.setViewPort(view.viewport);
-      this.renderer.setScissor(view.viewport);
+    const viewCollectionComp = viewCollection.getComponent(ViewCollection);
+    viewCollectionComp.views.forEach((view) => {
+      const viewComp = view.getComponent(View);
+      this.renderer.setViewport(viewComp.viewport);
+      this.renderer.setScissor(viewComp.viewport);
       this.renderer.setScissorTest(true);
-      this.renderer.render(view.scene, view.camera);
+      // This call to render does not work because scene and camera are not stored on the View components,
+      // only sceneId and cameraId.
+      this.renderer.render(viewComp.scene, viewComp.camera);
     });
     this.renderer.setScissorTest(false);
   }
@@ -191,6 +195,9 @@ class WorldSystem extends System {
   }
 
   update(deltaTime) {
+    const now = Date.now();
+    const dateNow = new Date(now);
+    console.log('Updating world_system at', dateNow.toLocaleDateString(), dateNow.toLocaleTimeString());
     // Remove inactive entities
     const entitiesComp = this.world.getComponent(Entities);
     for (const entity of entitiesComp.entities) {

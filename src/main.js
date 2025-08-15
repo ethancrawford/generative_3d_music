@@ -53,7 +53,7 @@ class App {
     this.initializeManagers();
     this.setupEventListeners(this.worldSystem.renderer.domElement, viewSystem);
     // this.animate();
-
+    this.worldSystem.start();
     console.log('Generative 3D Music App initialized');
   }
 
