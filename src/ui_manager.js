@@ -6,6 +6,7 @@ export class UIManager {
 
     initializeUI() {
         this.setupModeToggle();
+        this.setupWorldButton();
         this.setupPrimitiveSelection();
         this.updateAllDisplays();
     }
@@ -38,6 +39,19 @@ export class UIManager {
 
         // Set initial selection
         this.updatePrimitiveButtons();
+    }
+
+    setupWorldButton() {
+      const worldButton = document.querySelector('.toggle-switch');
+      worldButton.addEventListener("click", (event) => {
+        const running = event.currentTarget.children[0].checked;
+        if (running) {
+          this.app.world.start();
+        }
+        else {
+          this.app.world.stop();
+        }
+      })
     }
 
     updateModeButtons() {

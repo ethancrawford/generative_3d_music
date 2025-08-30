@@ -1,9 +1,8 @@
 import { System } from "../core/system.js";
-import { PointLight } from "three";
+import { AmbientLight } from "three";
 import { ThreeLight } from "../components/three_light.js";
-import { ThreePointLight } from "../components/three_point_light.js";
 
-class ThreePointLightSystem extends System {
+class ThreeAmbientLightSystem extends System {
   constructor(world, sceneCollection) {
     super(world);
     this.sceneCollection = sceneCollection;
@@ -11,12 +10,12 @@ class ThreePointLightSystem extends System {
   }
 
   static get requiredComponents() {
-    return [ ThreeLight, ThreePointLight ];
+    return [ ThreeLight ];
   }
 
   update(deltaTime) {
     for (const entity of this.entities) {
-      this.updatePointLight(entity);
+      this.updateAmbientLight(entity);
     }
   }
 
@@ -26,20 +25,16 @@ class ThreePointLightSystem extends System {
     };
   }
 
-  updatePointLight(entity) {
+  updateAmbientLight(entity) {
     const lightComp = entity.getComponent(ThreeLight);
-    const pointLightComp = entity.getComponent(ThreePointLight);
 
     let light = this.lightObjects.get(entity.id);
     if (!light) {
-      light = new PointLight(lightComp.color, lightComp.intensity);
+      light = new AmbientLight(lightComp.color, lightComp.intensity);
       this.lightObjects.set(entity.id, light);
       this.addToActiveScenes(light);
     }
-
-    light.decay = pointLightComp.decay;
-    light.distance = pointLightComp.distance;
   }
 }
 
-export { ThreePointLightSystem };
+export { ThreeAmbientLightSystem };

@@ -14,7 +14,7 @@ class ThreeDirectionalLightSystem extends System {
   }
 
   static get requiredComponents() {
-    return [ ThreeLight, ThreeDirectionalLight, ThreeDirectionLightTarget, ThreeLightShadow, Transform ];
+    return [ ThreeLight, ThreeDirectionalLight, ThreeDirectionalLightTarget, ThreeLightShadow, Transform ];
   }
 
   update(deltaTime) {
@@ -24,7 +24,7 @@ class ThreeDirectionalLightSystem extends System {
   }
 
   addToActiveScenes(light) {
-    for (const scene of sceneCollection) {
+    for (const [_id, scene] of this.sceneCollection) {
       scene.add(light);
     };
   }

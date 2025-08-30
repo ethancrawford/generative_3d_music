@@ -1,39 +1,45 @@
-import { createCube } from "../../factories/cube.js";
-import { Resizer } from "../../factories/resizer.js";
-import { Entities } from "../components/entities.js";
-import { Renderable } from "../components/renderable.js";
-import { SceneAssignment } from "../components/scene_assignment.js";
-import { Systems } from "../components/systems.js";
-import { ThreeClock } from "../components/three_clock.js";
-import { ViewCollection } from "../components/view_collection.js";
-import { View } from "../components/view.js";
-import { Entity } from "../core/entity.js";
-import { System } from "../core/system.js";
-import { World } from "../core/world.js";
+import { Clock } from "three";
+import { createCube } from "./factories/cube.js";
+import { createRenderer } from "./factories/renderer.js";
+// import { Resizer } from "../../factories/resizer.js";
+import { Active } from "./ecs/components/active.js";
+import { Lifecycle } from "./ecs/components/lifecycle.js";
+import { SceneAssignment } from "./ecs/components/scene_assignment.js";
+import { ViewCollection } from "./ecs/components/view_collection.js";
+import { View } from "./ecs/components/view.js";
+import { Entity } from "./ecs/core/entity.js";
+import { OSCEmitter } from "./ecs/components/osc_emitter.js";
+import { ThreeMesh } from "./ecs/components/three_mesh.js";
 
-class WorldSystem extends System {
-  constructor(world, container, viewCollection, eventBus) {
-    super(world);
-    this.renderer = this.world.getComponent(Renderable).renderer;
+class World {
+  constructor(container, sceneCollection, cameraCollection, viewCollection) {
+    this.entities = new Set();
+    this.systems = new Set();
+    this.renderer = createRenderer();
+    this.sceneCollection = sceneCollection;
+    this.cameraCollection = cameraCollection;
     this.viewCollection = viewCollection;
+    this.objectAdded = false;
     // TODO: Properly handle multi-view/multi-scene worlds
     // this.camera = views.cameras.get("main");
     // this.scene = views.scenes.get("main");
-    this.clock = this.world.getComponent(ThreeClock).clock;
+    this.clock = new Clock();
 
     container.append(this.renderer.domElement);
     //const resizer = new Resizer(container, this.camera, this.renderer);
-    this.initialiseECSEventListeners(eventBus);
   }
 
-  static get requiredComponents() {
-    return [Renderable, Views, ThreeClock];
+  setup(viewSystem, eventBus) {
+    this.initialiseECSEventListeners(viewSystem, eventBus);
   }
 
-  initialiseECSEventListeners(eventBus) {
+  initialiseECSEventListeners(viewSystem, eventBus) {
     eventBus.subscribe("objects:single:create", (data) => {
       const entity = this.createObject(data);
-      this.scene.add(entity.mesh);
+      const mesh = entity.getComponent(ThreeMesh).mesh;
+      const scenes = viewSystem.getScenesFromViewCollection(this.viewCollection);
+      scenes.forEach(scene => scene.add(mesh));
+      this.objectAdded = true;
     });
     eventBus.subscribe("objects:single:remove", (data) => {
       this.removeObject(data);
@@ -47,34 +53,33 @@ class WorldSystem extends System {
   // There are issues with Claude's code here because I think entities appear to only be added to systems
   // when the system is first added?
   // Oh, but addEntity() calls checkEntityForSystems(), so maybe not
-  createEntity() {
-    const entity = new Entity();
+  createEntity(active = true) {
+    let entity = new Entity().addComponent(new Lifecycle());
+    if (active) {
+      entity = entity.addComponent(new Active());
+    }
+    this.entities.add(entity);
     return entity;
   }
 
   addEntity(entity) {
-    const entitiesComp = this.world.getComponent(Entities);
-    entitiesComp.entities.add(entity);
+    this.entities.add(entity);
     this.checkEntityForSystems(entity);
     return entity;
   }
 
   removeEntity(entity) {
-    const entitiesComp = this.world.getComponent(Entities);
-    const systemsComp = this.world.getComponent(Systems);
-    entitiesComp.entities.delete(entity);
-    for (const system of systemsComp.systems) {
+    this.entities.delete(entity);
+    for (const system of this.systems) {
       system.removeEntity(entity);
     }
     entity.destroy();
   }
 
   addSystem(system) {
-    const entitiesComp = this.world.getComponent(Entities);
-    const systemsComp = this.world.getComponent(Systems);
-    systemsComp.systems.add(system);
+    this.systems.add(system);
     // Check existing entities for this system
-    for (const entity of entitiesComp.entities) {
+    for (const entity of this.entities) {
       if (this.entityMatchesSystem(entity, system)) {
         system.addEntity(entity);
       }
@@ -83,13 +88,11 @@ class WorldSystem extends System {
   }
 
   removeSystem(system) {
-    const systemsComp = this.world.getComponent(Systems);
-    systemsComp.systems.delete(system);
+    this.systems.delete(system);
   }
 
   checkEntityForSystems(entity) {
-    const systemsComp = this.world.getComponent(Systems);
-    for (const system of systemsComp.systems) {
+    for (const system of this.systems) {
       if (this.entityMatchesSystem(entity, system)) {
         system.addEntity(entity);
       }
@@ -97,7 +100,8 @@ class WorldSystem extends System {
   }
 
   entityMatchesSystem(entity, system) {
-    if (!entity.active) return false;
+    const activeComp = entity.getComponent(Active);
+    if (!activeComp) return false;
 
     const required = system.constructor.requiredComponents;
     return required.every(ComponentClass => entity.hasComponent(ComponentClass));
@@ -105,41 +109,40 @@ class WorldSystem extends System {
 
   createObject(data) {
     // TODO: add code that does something depending on the value of generatedByOSC
-    const { type, generatedByOSC } = data;
-    const entity = this.createEntity();
-    entity.addComponent(new SceneAssignment([ "main" ]));
+    const { type, args } = data;
+    let entity = this.createEntity().addComponent(new SceneAssignment([ "main" ]));
     switch (type) {
     case "cube":
-      this.handleCreateCube(entity, args);
+      entity = this.handleCreateCube(entity, args);
       break;
 
     case "sphere":
-      this.handleCreateSphere(entity, args);
+      entity = this.handleCreateSphere(entity, args);
       break;
 
     case "cylinder":
-      this.handleCreateCylinder(entity, args);
+      entity = this.handleCreateCylinder(entity, args);
       break;
 
     case "cone":
-      this.handleCreateCone(entity, args);
+      entity = this.handleCreateCone(entity, args);
       break;
 
     case "torus":
-      this.handleCreateTorus(entity, args);
+      entity = this.handleCreateTorus(entity, args);
       break;
     }
+    return entity;
   }
 
   handleCreateCube(entity, args) {
-    createCube(entity, args).addComponent(new OSCEmitter("/objects/single/update"))
+    return createCube(entity, args).addComponent(new OSCEmitter("/objects/single/update"))
   }
 
   removeObject(data) {
     const { id } = data;
 
-    const entitiesComp = this.world.getComponent(Entities);
-    const objectData = this.entitiesComp.entities.get(id);
+    const objectData = this.entities.get(id);
     if (!objectData) return false;
 
     // Remove from scene
@@ -151,7 +154,7 @@ class WorldSystem extends System {
     objectData.mesh.geometry.dispose();
 
     // Remove from our tracking
-    this.objects.delete(id);
+    // this.objects.delete(id);
 
     // Send removal OSC message
     // if (this.oscManager) {
@@ -183,10 +186,17 @@ class WorldSystem extends System {
       this.renderer.setViewport(viewComp.viewport);
       this.renderer.setScissor(viewComp.viewport);
       this.renderer.setScissorTest(true);
-      // This call to render does not work because scene and camera are not stored on the View components,
-      // only sceneId and cameraId.
-      this.renderer.render(viewComp.scene, viewComp.camera);
+
+      const scene = this.sceneCollection.get(viewComp.sceneId);
+      const camera = this.cameraCollection.get(viewComp.cameraId);
+      if (this.objectAdded) {
+        console.log(scene);
+      }
+      this.renderer.render(scene, camera);
     });
+    if(this.objectAdded) {
+      this.objectAdded = false;
+    }
     this.renderer.setScissorTest(false);
   }
 
@@ -197,21 +207,20 @@ class WorldSystem extends System {
   update(deltaTime) {
     const now = Date.now();
     const dateNow = new Date(now);
-    console.log('Updating world_system at', dateNow.toLocaleDateString(), dateNow.toLocaleTimeString());
+    console.log('Updating world at', dateNow.toLocaleDateString(), dateNow.toLocaleTimeString());
     // Remove inactive entities
-    const entitiesComp = this.world.getComponent(Entities);
-    for (const entity of entitiesComp.entities) {
-      if (!entity.active) {
+    for (const entity of this.entities) {
+      const activeComp = entity.getComponent(Active);
+      if (!activeComp) {
         this.removeEntity(entity);
       }
     }
 
     // Update all systems
-    const systemsComp = this.world.getComponent(Systems);
-    for (const system of systemsComp.systems) {
+    for (const system of this.systems) {
       system.update(deltaTime);
     }
   }
 }
 
-export { WorldSystem };
+export { World };

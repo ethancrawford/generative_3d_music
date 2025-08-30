@@ -1,10 +1,11 @@
 import { Raycaster, Vector2 } from "three";
 
 class ViewportClickHandler {
-  constructor(canvas, viewSystem) {
+  constructor(canvas, viewSystem, eventBus) {
     this.canvas = canvas;
     this.viewSystem = viewSystem;
     this.raycaster = new Raycaster();
+    this.eventBus = eventBus;
 
     canvas.addEventListener('click', (event) => this.handleClick(event));
   }
@@ -35,6 +36,7 @@ class ViewportClickHandler {
                            .add(direction.multiplyScalar(distance));
 
     // create object primitive at position
+    this.eventBus.emit("objects:single:create", { type: "cube", args: { position, generatedByOSC: false } });
     console.log("placing primitive at position:", position);
   }
 }

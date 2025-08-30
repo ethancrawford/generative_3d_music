@@ -1,10 +1,9 @@
 import { Component } from "../core/component.js";
 
-class Systems extends Component {
+class Active extends Component {
   constructor() {
     super();
-    this.systems = new Set();
   }
 }
 
-export { Systems };
+export { Active };

@@ -75,6 +75,22 @@ class ViewSystem extends System {
     });
     return clickedView ? clickedView.getComponent(View) : null;
   }
+
+  sceneById(sceneId) {
+    return this.sceneCollection.get(sceneId)
+  }
+
+  getScenesFromViewCollection(viewCollection) {
+    const viewCollectionComp = viewCollection.getComponent(ViewCollection);
+    return viewCollectionComp.views.map((view) => {
+      const viewComp = view.getComponent(View);
+      return this.sceneById(viewComp.sceneId)
+    });
+  }
+
+  cameraById(cameraId) {
+    return this.cameraCollection.get(cameraId)
+  }
 }
 
 export { ViewSystem };

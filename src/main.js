@@ -1,13 +1,9 @@
 import * as THREE from 'three';
 
 import { Entity } from "./ecs/core/entity.js";
-import { World } from "./ecs/core/world.js";
+import { World } from "./world.js";
 
-import { Entities } from "./ecs/components/entities.js";
-import { Renderable } from "./ecs/components/renderable.js";
 import { SceneAssignment } from "./ecs/components/scene_assignment.js";
-import { Systems } from "./ecs/components/systems.js";
-import { ThreeClock } from "./ecs/components/three_clock.js";
 import { ThreeDirectionalLight } from "./ecs/components/three_directional_light.js";
 import { ThreeDirectionalLightTarget } from "./ecs/components/three_directional_light_target.js";
 import { ThreeLight } from "./ecs/components/three_light.js";
@@ -18,17 +14,18 @@ import { View } from "./ecs/components/view.js";
 import { ViewCollection } from "./ecs/components/view_collection.js";
 
 import { OSCSystem } from "./ecs/systems/osc_system.js";
-import { SceneSystem } from "./ecs/systems/scene_system.js";
+// import { SceneSystem } from "./ecs/systems/scene_system.js";
 import { ThreeDirectionalLightSystem } from "./ecs/systems/three_directional_light_system.js";
+import { ThreeAmbientLightSystem } from "./ecs/systems/three_ambient_light_system.js";
 import { ThreePointLightSystem } from "./ecs/systems/three_point_light_system.js";
 import { ViewSystem } from "./ecs/systems/view_system.js";
-import { WorldSystem } from "./ecs/systems/world_system.js";
+// import { WorldSystem } from "./ecs/systems/world_system.js";
 
 import { EventBus } from "./event_bus.js";
 import { createCamera } from "./factories/camera.js";
 import { createScene } from "./factories/scene.js";
-import { OSCManager } from './osc_manager.js';
-import { SceneManager } from './scene_manager.js';
+// import { OSCManager } from './osc_manager.js';
+// import { SceneManager } from './scene_manager.js';
 import { UIManager } from './ui_manager.js';
 import { ViewportClickHandler } from "./event_handlers/viewport_click_handler.js";
 // import { ObjectManager } from './object_manager.js';
@@ -37,31 +34,29 @@ class App {
   constructor() {
     this.container = document.querySelector('#canvas-container');
     this.eventBus = new EventBus();
-    this.world = this.initialiseWorld();
 
-    const [ sceneCollection, cameraCollection, viewCollections, viewSystem ] = this.initialiseViewRelatedObjects();
+    const [sceneCollection, cameraCollection, mainViewCollection, viewCollections] = this.initialiseViewRelatedObjects();
+    this.world = new World(this.container, sceneCollection, cameraCollection, mainViewCollection);
 
-    this.worldSystem = new WorldSystem(this.world, this.container, viewCollections.get("main"), this.eventBus);
-    const [ ambientLight, directionalLight, accentLight ] = this.initialiseLights();
-    this.worldSystem.addSystem(new ThreeDirectionalLightSystem(this.world, sceneCollection));
-    this.worldSystem.addSystem(new ThreePointLightSystem(this.world, sceneCollection));
-    this.worldSystem.addSystem(new OSCSystem(this.world, this.eventBus));
+    const [ambientLight, directionalLight, accentLight] = this.initialiseLights();
+
+    const viewSystem = new ViewSystem(this.world, this.eventBus, sceneCollection, cameraCollection, viewCollections);
+    // viewSystem.addViewCollection("main", mainViewCollection);
+    this.world.addSystem(viewSystem);
+    this.world.addSystem(new ThreeAmbientLightSystem(this.world, sceneCollection));
+    this.world.addSystem(new ThreeDirectionalLightSystem(this.world, sceneCollection));
+    this.world.addSystem(new ThreePointLightSystem(this.world, sceneCollection));
+    this.world.addSystem(new OSCSystem(this.world, this.eventBus));
     // this.rulesManager = new RulesManager();
     this.mode = 'user'; // 'user' or 'generative'
     this.selectedPrimitive = 'cube';
 
     this.initializeManagers();
-    this.setupEventListeners(this.worldSystem.renderer.domElement, viewSystem);
+    this.setupEventListeners(this.world.renderer.domElement, viewSystem, this.eventBus);
+    this.world.setup(viewSystem, this.eventBus);
     // this.animate();
-    this.worldSystem.start();
+    // this.world.start();
     console.log('Generative 3D Music App initialized');
-  }
-
-  initialiseWorld() {
-    return new World().addComponent(new Entities())
-                      .addComponent(new Systems())
-                      .addComponent(new Renderable())
-                      .addComponent(new ThreeClock());
   }
 
   initialiseMainViewCollection() {
@@ -104,18 +99,16 @@ class App {
     const mainViewCollection = this.initialiseMainViewCollection();
     viewCollections.set("main", mainViewCollection);
 
-    const viewSystem = new ViewSystem(this.world, this.eventBus, sceneCollection, cameraCollection, viewCollections);
-    viewSystem.addViewCollection("main", mainViewCollection);
     // const sceneSystem = new SceneSystem(this.world, this.eventBus, sceneCollection);
 
-    return [ sceneCollection, cameraCollection, viewCollections, viewSystem ];
+    return [ sceneCollection, cameraCollection, mainViewCollection, viewCollections ];
   }
 
   initialiseLights() {
-    const ambientLight = this.worldSystem.createEntity();
-    ambientLight.addComponent(new ThreeLight({ colour: 0x404040, intensity: 0.6 }))
+    const ambientLight = this.world.createEntity();
+    ambientLight.addComponent(new ThreeLight({ colour: 0x404040, intensity: 0.8 }))
                 .addComponent(new SceneAssignment([ "main" ]));
-    const directionalLight = this.worldSystem.createEntity();
+    const directionalLight = this.world.createEntity();
     directionalLight.addComponent(new ThreeLight({ color: 0xffffff, intensity: 1 }))
                     .addComponent(new ThreeDirectionalLight())
                     .addComponent(new ThreeDirectionalLightTarget())
@@ -123,7 +116,7 @@ class App {
                     .addComponent(new Transform({ x: 10, y: 10, z: 5 }))
                     .addComponent(new SceneAssignment([ "main" ]));
 
-    const accentLight = this.worldSystem.createEntity();
+    const accentLight = this.world.createEntity();
     accentLight.addComponent(new ThreeLight({ color: 0x0066ff, intensity: 0.5 }))
                .addComponent(new ThreePointLight({ distance: 30 }))
                .addComponent(new Transform({ x: -10, y: 5, z: 10 }))
@@ -150,11 +143,11 @@ class App {
     // this.oscManager.setObjectManager(this.objectManager);
   }
 
-  setupEventListeners(canvas, viewSystem) {
+  setupEventListeners(canvas, viewSystem, eventBus) {
     // Need to figure out where to put eventListeners that set the current view.
 
     // Canvas click events for object placement
-    new ViewportClickHandler(canvas, viewSystem);
+    new ViewportClickHandler(canvas, viewSystem, eventBus);
     // Right click for object removal
     // this.sceneManager.canvas.addEventListener('contextmenu', (event) => {
     //   event.preventDefault();
@@ -231,7 +224,10 @@ class App {
   //   // Render scene
   //   this.sceneManager.render();
   // }
+
 }
+
+
 
 // Initialize the application when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
