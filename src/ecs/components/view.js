@@ -4,7 +4,7 @@ class View extends Component {
   constructor(args) {
     super();
     const { viewId, sceneId, cameraId, viewport } = args;
-    this.id = viewId;
+    this.viewId = viewId;
     this.sceneId = sceneId;
     this.cameraId = cameraId;
     this.viewport = viewport;

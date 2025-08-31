@@ -6,6 +6,7 @@ import { World } from "./world.js";
 import { SceneAssignment } from "./ecs/components/scene_assignment.js";
 import { ThreeDirectionalLight } from "./ecs/components/three_directional_light.js";
 import { ThreeDirectionalLightTarget } from "./ecs/components/three_directional_light_target.js";
+import { ThreeAmbientLight } from "./ecs/components/three_ambient_light.js";
 import { ThreeLight } from "./ecs/components/three_light.js";
 import { ThreeLightShadow } from "./ecs/components/three_light_shadow.js";
 import { ThreePointLight } from "./ecs/components/three_point_light.js";
@@ -106,20 +107,21 @@ class App {
 
   initialiseLights() {
     const ambientLight = this.world.createEntity();
-    ambientLight.addComponent(new ThreeLight({ colour: 0x404040, intensity: 0.8 }))
+    ambientLight.addComponent(new ThreeLight({ colour: 0x808080, intensity: 0.8 }))
+                .addComponent(new ThreeAmbientLight())
                 .addComponent(new SceneAssignment([ "main" ]));
     const directionalLight = this.world.createEntity();
     directionalLight.addComponent(new ThreeLight({ color: 0xffffff, intensity: 1 }))
                     .addComponent(new ThreeDirectionalLight())
                     .addComponent(new ThreeDirectionalLightTarget())
                     .addComponent(new ThreeLightShadow())
-                    .addComponent(new Transform({ x: 10, y: 10, z: 5 }))
+                    .addComponent(new Transform(10, 10, 5))
                     .addComponent(new SceneAssignment([ "main" ]));
 
     const accentLight = this.world.createEntity();
     accentLight.addComponent(new ThreeLight({ color: 0x0066ff, intensity: 0.5 }))
                .addComponent(new ThreePointLight({ distance: 30 }))
-               .addComponent(new Transform({ x: -10, y: 5, z: 10 }))
+               .addComponent(new Transform(-10, 5, 10))
                .addComponent(new SceneAssignment([ "main" ]));
     return [ ambientLight, directionalLight, accentLight ];
   }

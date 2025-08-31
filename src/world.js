@@ -19,10 +19,6 @@ class World {
     this.sceneCollection = sceneCollection;
     this.cameraCollection = cameraCollection;
     this.viewCollection = viewCollection;
-    this.objectAdded = false;
-    // TODO: Properly handle multi-view/multi-scene worlds
-    // this.camera = views.cameras.get("main");
-    // this.scene = views.scenes.get("main");
     this.clock = new Clock();
 
     container.append(this.renderer.domElement);
@@ -181,22 +177,20 @@ class World {
 
   renderViewCollection(viewCollection) {
     const viewCollectionComp = viewCollection.getComponent(ViewCollection);
+
     viewCollectionComp.views.forEach((view) => {
       const viewComp = view.getComponent(View);
-      this.renderer.setViewport(viewComp.viewport);
-      this.renderer.setScissor(viewComp.viewport);
+      const vp = viewComp.viewport;
+      this.renderer.setViewport(vp.x, vp.y, vp.width, vp.height);
+      this.renderer.setScissor(vp.x, vp.y, vp.width, vp.height);
       this.renderer.setScissorTest(true);
 
       const scene = this.sceneCollection.get(viewComp.sceneId);
       const camera = this.cameraCollection.get(viewComp.cameraId);
-      if (this.objectAdded) {
-        console.log(scene);
-      }
+
       this.renderer.render(scene, camera);
     });
-    if(this.objectAdded) {
-      this.objectAdded = false;
-    }
+
     this.renderer.setScissorTest(false);
   }
 

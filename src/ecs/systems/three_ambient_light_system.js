@@ -1,5 +1,6 @@
 import { System } from "../core/system.js";
 import { AmbientLight } from "three";
+import { ThreeAmbientLight } from "../components/three_ambient_light.js";
 import { ThreeLight } from "../components/three_light.js";
 
 class ThreeAmbientLightSystem extends System {
@@ -10,7 +11,7 @@ class ThreeAmbientLightSystem extends System {
   }
 
   static get requiredComponents() {
-    return [ ThreeLight ];
+    return [ ThreeLight, ThreeAmbientLight ];
   }
 
   update(deltaTime) {

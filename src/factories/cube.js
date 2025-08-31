@@ -9,7 +9,8 @@ function createCube(entity, args) {
   const material = createMaterial(materialArgs);
   const mesh = new ThreeMesh(geometry, material);
   mesh.mesh = new Mesh(geometry, material);
-  entity.addComponent(new Transform(position))
+  const { x, y, z } = position;
+  entity.addComponent(new Transform(x, y, z))
         .addComponent(mesh);
   return entity;
 }
