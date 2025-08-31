@@ -1,4 +1,5 @@
 import { Clock } from "three";
+import debug from "debug";
 import { createCube } from "./factories/cube.js";
 import { createRenderer } from "./factories/renderer.js";
 // import { Resizer } from "../../factories/resizer.js";
@@ -10,6 +11,8 @@ import { View } from "./ecs/components/view.js";
 import { Entity } from "./ecs/core/entity.js";
 import { OSCEmitter } from "./ecs/components/osc_emitter.js";
 import { ThreeMesh } from "./ecs/components/three_mesh.js";
+
+const log = debug("app:world");
 
 class World {
   constructor(container, sceneCollection, cameraCollection, viewCollection) {
@@ -35,7 +38,6 @@ class World {
       const mesh = entity.getComponent(ThreeMesh).mesh;
       const scenes = viewSystem.getScenesFromViewCollection(this.viewCollection);
       scenes.forEach(scene => scene.add(mesh));
-      this.objectAdded = true;
     });
     eventBus.subscribe("objects:single:remove", (data) => {
       this.removeObject(data);
@@ -46,9 +48,6 @@ class World {
     });
   }
 
-  // There are issues with Claude's code here because I think entities appear to only be added to systems
-  // when the system is first added?
-  // Oh, but addEntity() calls checkEntityForSystems(), so maybe not
   createEntity(active = true) {
     let entity = new Entity().addComponent(new Lifecycle());
     if (active) {
@@ -160,7 +159,7 @@ class World {
     //   position: objectData.position
     // });
 
-    console.log(`Removed object with ID ${id}`);
+    log(`Removed object with ID ${id}`);
     return true;
   }
 
@@ -201,7 +200,7 @@ class World {
   update(deltaTime) {
     const now = Date.now();
     const dateNow = new Date(now);
-    console.log('Updating world at', dateNow.toLocaleDateString(), dateNow.toLocaleTimeString());
+    log('Updating world at', dateNow.toLocaleDateString(), dateNow.toLocaleTimeString());
     // Remove inactive entities
     for (const entity of this.entities) {
       const activeComp = entity.getComponent(Active);

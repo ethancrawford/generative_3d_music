@@ -1,3 +1,6 @@
+if (import.meta.env.DEV) {
+  localStorage.debug = 'app:world';
+}
 import * as THREE from 'three';
 
 import { Entity } from "./ecs/core/entity.js";
@@ -21,7 +24,6 @@ import { ThreeAmbientLightSystem } from "./ecs/systems/three_ambient_light_syste
 import { ThreePointLightSystem } from "./ecs/systems/three_point_light_system.js";
 import { TransformSystem } from './ecs/systems/transform_system.js';
 import { ViewSystem } from "./ecs/systems/view_system.js";
-// import { WorldSystem } from "./ecs/systems/world_system.js";
 
 import { EventBus } from "./event_bus.js";
 import { createCamera } from "./factories/camera.js";
@@ -43,7 +45,6 @@ class App {
     const [ambientLight, directionalLight, accentLight] = this.initialiseLights();
 
     const viewSystem = new ViewSystem(this.world, this.eventBus, sceneCollection, cameraCollection, viewCollections);
-    // viewSystem.addViewCollection("main", mainViewCollection);
     this.world.addSystem(viewSystem);
     this.world.addSystem(new ThreeAmbientLightSystem(this.world, sceneCollection));
     this.world.addSystem(new TransformSystem(this.world));
@@ -57,7 +58,6 @@ class App {
     this.initializeManagers();
     this.setupEventListeners(this.world.renderer.domElement, viewSystem, this.eventBus);
     this.world.setup(viewSystem, this.eventBus);
-    // this.animate();
     // this.world.start();
     console.log('Generative 3D Music App initialized');
   }
@@ -215,23 +215,7 @@ class App {
     this.uiManager.updateSelectedPrimitive();
     console.log(`Selected primitive: ${primitive}`);
   }
-
-  // animate() {
-  //   requestAnimationFrame(() => this.animate());
-
-  //   // Update object animations
-  //   this.objectManager.update();
-
-  //   // Update UI
-  //   this.uiManager.update();
-
-  //   // Render scene
-  //   this.sceneManager.render();
-  // }
-
 }
-
-
 
 // Initialize the application when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {

@@ -1,5 +1,5 @@
-const WebSocket = require('ws');
-const osc = require('osc');
+import { WebSocketServer } from 'ws';
+import osc from 'osc';
 
 class OSCBridge {
     constructor() {
@@ -19,10 +19,12 @@ class OSCBridge {
     }
 
     initializeWebSocketServer() {
-        this.wss = new WebSocket.Server({ 
-            port: this.wsPort,
-            perMessageDeflate: false
-        });
+      const options = {
+        port: this.wsPort,
+        perMessageDeflate: false
+      };
+      console.log('WebSocket options:', options);
+        this.wss = new WebSocketServer(options);
 
         this.wss.on('connection', (ws) => {
             console.log('Client connected to WebSocket');
@@ -193,4 +195,4 @@ process.on('SIGTERM', () => {
     process.exit(0);
 });
 
-module.exports = OSCBridge;
+export { OSCBridge };
