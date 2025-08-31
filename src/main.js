@@ -19,6 +19,7 @@ import { OSCSystem } from "./ecs/systems/osc_system.js";
 import { ThreeDirectionalLightSystem } from "./ecs/systems/three_directional_light_system.js";
 import { ThreeAmbientLightSystem } from "./ecs/systems/three_ambient_light_system.js";
 import { ThreePointLightSystem } from "./ecs/systems/three_point_light_system.js";
+import { TransformSystem } from './ecs/systems/transform_system.js';
 import { ViewSystem } from "./ecs/systems/view_system.js";
 // import { WorldSystem } from "./ecs/systems/world_system.js";
 
@@ -45,6 +46,7 @@ class App {
     // viewSystem.addViewCollection("main", mainViewCollection);
     this.world.addSystem(viewSystem);
     this.world.addSystem(new ThreeAmbientLightSystem(this.world, sceneCollection));
+    this.world.addSystem(new TransformSystem(this.world));
     this.world.addSystem(new ThreeDirectionalLightSystem(this.world, sceneCollection));
     this.world.addSystem(new ThreePointLightSystem(this.world, sceneCollection));
     this.world.addSystem(new OSCSystem(this.world, this.eventBus));
