@@ -2,6 +2,10 @@ if (import.meta.env.DEV) {
   localStorage.debug = 'app:world';
 }
 import * as THREE from 'three';
+import { application } from "./stimulus_application.js";
+import ModeController from "./controllers/mode_controller.js";
+import PrimitivesController from "./controllers/primitives_controller.js";
+import StatusController from "./controllers/status_controller.js";
 
 import { Entity } from "./ecs/core/entity.js";
 import { World } from "./world.js";
@@ -38,6 +42,7 @@ class App {
   constructor() {
     this.container = document.querySelector('#canvas-container');
     this.eventBus = new EventBus();
+    window.app = this;
 
     const [sceneCollection, cameraCollection, mainViewCollection, viewCollections] = this.initialiseViewRelatedObjects();
     this.world = new World(this.container, sceneCollection, cameraCollection, mainViewCollection);
@@ -52,11 +57,11 @@ class App {
     this.world.addSystem(new ThreePointLightSystem(this.world, sceneCollection));
     this.world.addSystem(new OSCSystem(this.world, this.eventBus));
     // this.rulesManager = new RulesManager();
-    this.mode = 'user'; // 'user' or 'generative'
     this.selectedPrimitive = 'cube';
 
     this.initializeManagers();
     this.setupEventListeners(this.world.renderer.domElement, viewSystem, this.eventBus);
+    // We can also set up ECS event listeners in the world now (we needed to wait until viewSystem was created).
     this.world.setup(viewSystem, this.eventBus);
     // this.world.start();
     console.log('Generative 3D Music App initialized');
@@ -202,22 +207,14 @@ class App {
       this.objectManager.removeObject(object.userData.id);
     }
   }
-
-  setMode(mode) {
-    this.mode = mode;
-    this.uiManager.updateModeDisplay();
-    this.uiManager.updateUIForMode();
-    console.log(`Mode changed to: ${mode}`);
-  }
-
-  setSelectedPrimitive(primitive) {
-    this.selectedPrimitive = primitive;
-    this.uiManager.updateSelectedPrimitive();
-    console.log(`Selected primitive: ${primitive}`);
-  }
 }
 
 // Initialize the application when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  window.app = new App();
+  new App();
+  application.register("mode", ModeController);
+  application.register("primitives", PrimitivesController);
+  application.register("status", StatusController);
+  // application.register("world", WorldController);
 });
+

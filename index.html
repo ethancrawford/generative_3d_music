@@ -9,41 +9,67 @@
 <body>
     <div id="canvas-container">
         <div id="ui-overlay">
-            <div class="ui-panel">
+            <div class="ui-panel"
+                 data-controller="mode"
+                 data-mode-current-value="user">
                 <div class="mode-toggle">
                     <span>Mode:</span>
-                    <button id="user-mode-btn" class="toggle-button active">User</button>
-                    <button id="generative-mode-btn" class="toggle-button">Generative</button>
+                    <button id="user-mode-btn"
+                            data-action="mode#selectUser"
+                            data-mode-target="userButton"
+                            class="toggle-button active">User</button>
+                    <button id="generative-mode-btn"
+                            data-action="mode#selectGenerative"
+                            data-mode-target="generativeButton"
+                            class="toggle-button">Generative</button>
                 </div>
             </div>
 
-            <div class="ui-panel">
+            <div class="ui-panel"
+                 data-controller="primitives"
+                 data-primitives-selected-value="cube">
                 <h3 style="margin-bottom: 10px;">Primitives</h3>
                 <div class="primitives-menu">
-                    <div class="primitive-button" data-primitive="cube">
-                        <div class="primitive-icon">⬛</div>
-                        <div class="primitive-label">Cube</div>
+                    <div class="primitive-button"
+                         data-primitive="cube"
+                         data-action="primitives#select"
+                         data-primitives-target="button">
+                      <div class="primitive-icon">⬛</div>
+                      <div class="primitive-label">Cube</div>
                     </div>
-                    <div class="primitive-button" data-primitive="sphere">
-                        <div class="primitive-icon">⚫</div>
-                        <div class="primitive-label">Sphere</div>
+                    <div class="primitive-button"
+                         data-primitive="sphere"
+                         data-action="primitives#select"
+                         data-primitives-target="button">
+                      <div class="primitive-icon">⚫</div>
+                      <div class="primitive-label">Sphere</div>
                     </div>
-                    <div class="primitive-button" data-primitive="cylinder">
-                        <div class="primitive-icon">⬜</div>
-                        <div class="primitive-label">Cylinder</div>
+                    <div class="primitive-button"
+                         data-primitive="cylinder"
+                         data-action="primitives#select"
+                         data-primitives-target="button">
+                      <div class="primitive-icon">⬜</div>
+                      <div class="primitive-label">Cylinder</div>
                     </div>
-                    <div class="primitive-button" data-primitive="cone">
-                        <div class="primitive-icon">🔺</div>
-                        <div class="primitive-label">Cone</div>
+                    <div class="primitive-button"
+                         data-primitive="cone"
+                         data-action="primitives#select"
+                         data-primitives-target="button">
+                      <div class="primitive-icon">🔺</div>
+                      <div class="primitive-label">Cone</div>
                     </div>
-                    <div class="primitive-button" data-primitive="torus">
-                        <div class="primitive-icon">⭕</div>
-                        <div class="primitive-label">Torus</div>
+                    <div class="primitive-button"
+                         data-primitive="torus"
+                         data-action="primitives#select"
+                         data-primitives-target="button">
+                      <div class="primitive-icon">⭕</div>
+                      <div class="primitive-label">Torus</div>
                     </div>
                 </div>
             </div>
 
-            <div class="ui-panel status-panel">
+            <div class="ui-panel status-panel"
+                 data-controller="status">
                 <h3 style="margin-bottom: 10px;">Status</h3>
                 <div class="status-item">
                   <span>World:</span>
@@ -54,15 +80,19 @@
                 </div>
                 <div class="status-item">
                   <span>OSC Connection:</span>
-                  <div class="status-indicator" id="osc-status"></div>
+                  <div class="status-indicator"
+                       id="osc-status"
+                       data-status-target="oscStatus"></div>
                 </div>
                 <div class="status-item">
                     <span>Objects:</span>
-                    <span id="object-count">0</span>
+                    <span id="object-count"
+                          data-status-target="objectCount">0</span>
                 </div>
                 <div class="status-item">
                     <span>Messages Sent:</span>
-                    <span id="message-count">0</span>
+                    <span id="message-count"
+                          data-status-target="messageCount">0</span>
                 </div>
             </div>
         </div>
@@ -73,9 +103,6 @@
             • Right click: Remove object<br>
             • Mouse wheel: Zoom<br>
             • Drag: Rotate view<br>
-            <br>
-            <strong>Current Mode:</strong> <span id="current-mode">User</span><br>
-            <strong>Selected:</strong> <span id="selected-primitive">Cube</span>
         </div>
     </div>
 

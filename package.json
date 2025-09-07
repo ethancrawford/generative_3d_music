@@ -11,6 +11,7 @@
     "vite": "^5.0.0"
   },
   "dependencies": {
+    "@hotwired/stimulus": "^3.2.2",
     "osc": "^2.4.5",
     "three": "^0.179.1",
     "ws": "^8.18.3"

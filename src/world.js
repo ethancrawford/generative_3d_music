@@ -38,6 +38,7 @@ class World {
       const mesh = entity.getComponent(ThreeMesh).mesh;
       const scenes = viewSystem.getScenesFromViewCollection(this.viewCollection);
       scenes.forEach(scene => scene.add(mesh));
+      eventBus.emit("objects:count:changed", this.entities.size);
     });
     eventBus.subscribe("objects:single:remove", (data) => {
       this.removeObject(data);

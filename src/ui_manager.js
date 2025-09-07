@@ -5,41 +5,41 @@ export class UIManager {
     }
 
     initializeUI() {
-        this.setupModeToggle();
+        // this.setupModeToggle();
         this.setupWorldButton();
-        this.setupPrimitiveSelection();
+        // this.setupPrimitiveSelection();
         this.updateAllDisplays();
     }
 
-    setupModeToggle() {
-        const userModeBtn = document.getElementById('user-mode-btn');
-        const generativeModeBtn = document.getElementById('generative-mode-btn');
+    // setupModeToggle() {
+    //     const userModeBtn = document.getElementById('user-mode-btn');
+    //     const generativeModeBtn = document.getElementById('generative-mode-btn');
 
-        userModeBtn.addEventListener('click', () => {
-            this.app.setMode('user');
-            this.updateModeButtons();
-        });
+    //     userModeBtn.addEventListener('click', () => {
+    //         this.app.setMode('user');
+    //         this.updateModeButtons();
+    //     });
 
-        generativeModeBtn.addEventListener('click', () => {
-            this.app.setMode('generative');
-            this.updateModeButtons();
-        });
-    }
+    //     generativeModeBtn.addEventListener('click', () => {
+    //         this.app.setMode('generative');
+    //         this.updateModeButtons();
+    //     });
+    // }
 
-    setupPrimitiveSelection() {
-        const primitiveButtons = document.querySelectorAll('.primitive-button');
+    // setupPrimitiveSelection() {
+    //     const primitiveButtons = document.querySelectorAll('.primitive-button');
         
-        primitiveButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const primitive = button.dataset.primitive;
-                this.app.setSelectedPrimitive(primitive);
-                this.updatePrimitiveButtons();
-            });
-        });
+    //     primitiveButtons.forEach(button => {
+    //         button.addEventListener('click', () => {
+    //             const primitive = button.dataset.primitive;
+    //             this.app.setSelectedPrimitive(primitive);
+    //             this.updatePrimitiveButtons();
+    //         });
+    //     });
 
-        // Set initial selection
-        this.updatePrimitiveButtons();
-    }
+    //     // Set initial selection
+    //     this.updatePrimitiveButtons();
+    // }
 
     setupWorldButton() {
       const worldButton = document.querySelector('.toggle-switch');
@@ -54,41 +54,41 @@ export class UIManager {
       })
     }
 
-    updateModeButtons() {
-        const userBtn = document.getElementById('user-mode-btn');
-        const generativeBtn = document.getElementById('generative-mode-btn');
+    // updateModeButtons() {
+    //     const userBtn = document.getElementById('user-mode-btn');
+    //     const generativeBtn = document.getElementById('generative-mode-btn');
 
-        userBtn.classList.toggle('active', this.app.mode === 'user');
-        generativeBtn.classList.toggle('active', this.app.mode === 'generative');
-    }
+    //     userBtn.classList.toggle('active', this.app.mode === 'user');
+    //     generativeBtn.classList.toggle('active', this.app.mode === 'generative');
+    // }
 
-    updatePrimitiveButtons() {
-        const primitiveButtons = document.querySelectorAll('.primitive-button');
+    // updatePrimitiveButtons() {
+    //     const primitiveButtons = document.querySelectorAll('.primitive-button');
         
-        primitiveButtons.forEach(button => {
-            const isSelected = button.dataset.primitive === this.app.selectedPrimitive;
-            button.classList.toggle('active', isSelected);
-        });
-    }
+    //     primitiveButtons.forEach(button => {
+    //         const isSelected = button.dataset.primitive === this.app.selectedPrimitive;
+    //         button.classList.toggle('active', isSelected);
+    //     });
+    // }
 
-    updateModeDisplay() {
-        const currentModeElement = document.getElementById('current-mode');
-        if (currentModeElement) {
-            currentModeElement.textContent = this.app.mode.charAt(0).toUpperCase() + 
-                                           this.app.mode.slice(1);
-        }
-        this.updateModeButtons();
-    }
+    // updateModeDisplay() {
+    //     const currentModeElement = document.getElementById('current-mode');
+    //     if (currentModeElement) {
+    //         currentModeElement.textContent = this.app.mode.charAt(0).toUpperCase() + 
+    //                                        this.app.mode.slice(1);
+    //     }
+    //     this.updateModeButtons();
+    // }
 
-    updateSelectedPrimitive() {
-        const selectedPrimitiveElement = document.getElementById('selected-primitive');
-        if (selectedPrimitiveElement) {
-            selectedPrimitiveElement.textContent = 
-                this.app.selectedPrimitive.charAt(0).toUpperCase() + 
-                this.app.selectedPrimitive.slice(1);
-        }
-        this.updatePrimitiveButtons();
-    }
+    // updateSelectedPrimitive() {
+    //     const selectedPrimitiveElement = document.getElementById('selected-primitive');
+    //     if (selectedPrimitiveElement) {
+    //         selectedPrimitiveElement.textContent = 
+    //             this.app.selectedPrimitive.charAt(0).toUpperCase() + 
+    //             this.app.selectedPrimitive.slice(1);
+    //     }
+    //     this.updatePrimitiveButtons();
+    // }
 
     updateObjectCount() {
         const objectCountElement = document.getElementById('object-count');
@@ -113,8 +113,8 @@ export class UIManager {
     }
 
     updateAllDisplays() {
-        this.updateModeDisplay();
-        this.updateSelectedPrimitive();
+        // this.updateModeDisplay();
+        // this.updateSelectedPrimitive();
         this.updateObjectCount();
         this.updateMessageCount();
         this.updateConnectionStatus();
@@ -165,15 +165,15 @@ export class UIManager {
     }
 
     // Method to disable/enable UI based on mode
-    updateUIForMode() {
-        const primitivesPanel = document.querySelector('.primitives-menu').parentElement;
+    // updateUIForMode() {
+    //     const primitivesPanel = document.querySelector('.primitives-menu').parentElement;
         
-        if (this.app.mode === 'generative') {
-            primitivesPanel.style.opacity = '0.5';
-            primitivesPanel.style.pointerEvents = 'none';
-        } else {
-            primitivesPanel.style.opacity = '1';
-            primitivesPanel.style.pointerEvents = 'auto';
-        }
-    }
+    //     if (this.app.mode === 'generative') {
+    //         primitivesPanel.style.opacity = '0.5';
+    //         primitivesPanel.style.pointerEvents = 'none';
+    //     } else {
+    //         primitivesPanel.style.opacity = '1';
+    //         primitivesPanel.style.pointerEvents = 'auto';
+    //     }
+    // }
 }
