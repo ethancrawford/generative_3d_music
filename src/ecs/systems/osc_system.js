@@ -1,5 +1,13 @@
+import debug from "debug";
 import { System } from "../core/system.js";
 import { OSCEmitter } from "../components/osc_emitter.js";
+import { Transform } from "../components/transform.js";
+import { ThreeMesh } from "../components/three_mesh.js";
+
+const log = debug("app:oscSystem");
+log.log = console.log.bind(console);
+
+const error = debug("app:oscSystem:error");
 
 class OSCSystem extends System {
   constructor(world, eventBus) {
@@ -25,7 +33,7 @@ class OSCSystem extends System {
       this.ws = new WebSocket('ws://localhost:8081');
 
       this.ws.onopen = () => {
-        console.log("WebSocket connection opened");
+        log("WebSocket connection opened");
         this.isConnected = true;
         this.updateConnectionStatus();
 
@@ -40,26 +48,26 @@ class OSCSystem extends System {
         try {
           const message = JSON.parse(event.data);
           this.handleIncomingMessage(message);
-        } catch (error) {
-          console.error("Error parsing WebSocket message:", error);
+        } catch (err) {
+           error("Error parsing WebSocket message:", err);
         }
       };
 
       this.ws.onclose = () => {
-        console.log("WebSocket connection closed");
+        log("WebSocket connection closed");
         this.isConnected = false;
         this.updateConnectionStatus();
         this.attemptReconnect();
       };
 
-      this.ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
+      this.ws.onerror = (err) => {
+        error("WebSocket error:", err);
         this.isConnected = false;
         this.updateConnectionStatus();
       };
 
-    } catch (error) {
-      console.error("Failed to initialize WebSocket:", error);
+    } catch (err) {
+      error("Failed to initialize WebSocket:", err);
       this.isConnected = false;
       this.updateConnectionStatus();
       this.attemptReconnect();
@@ -69,23 +77,23 @@ class OSCSystem extends System {
   attemptReconnect() {
     if (this.reconnectInterval) return; // Already attempting to reconnect
 
-    console.log(`Attempting to reconnect in ${this.reconnectDelay / 1000} seconds...`);
+    log(`Attempting to reconnect in ${this.reconnectDelay / 1000} seconds...`);
 
     this.reconnectInterval = setInterval(() => {
       if (!this.isConnected) {
-        console.log("Attempting WebSocket reconnection...");
+        log("Attempting WebSocket reconnection...");
         this.initializeWebSocket();
       }
     }, this.reconnectDelay);
   }
 
   handleIncomingMessage(message) {
-    console.log("Received message from OSC bridge:", message);
+    log("Received message from OSC bridge:", message);
 
     try {
       switch (message.type) {
       case 'connection':
-        console.log('Bridge connection confirmed:', message.status);
+        log('Bridge connection confirmed:', message.status);
         break;
 
       case 'osc-message':
@@ -93,14 +101,14 @@ class OSCSystem extends System {
         break;
 
       case 'pong':
-        console.log('Bridge pong received');
+        log('Bridge pong received');
         break;
 
       default:
-        console.log(`Unhandled message type: ${message.type}`, message);
+        log(`Unhandled message type: ${message.type}`, message);
       }
-    } catch (error) {
-      console.error("Error handling WebSocket message:", error);
+    } catch (err) {
+      error("Error handling WebSocket message:", err);
     }
   }
 
@@ -130,10 +138,10 @@ class OSCSystem extends System {
         break;
 
       default:
-        console.log(`Unhandled OSC message: ${address}`, args);
+        log(`Unhandled OSC message: ${address}`, args);
       }
-    } catch (error) {
-      console.error("Error handling OSC message:", error);
+    } catch (err) {
+      error("Error handling OSC message:", err);
     }
   }
 
@@ -204,8 +212,11 @@ class OSCSystem extends System {
     }
 
     const transform = entity.getComponent(Transform);
-    const primitiveType = entity.getComponent(PrimitiveType);
-
+    const meshComponent = entity.getComponent(ThreeMesh);
+    let primitiveType;
+    if (meshComponent && meshComponent.mesh) {
+      primitiveType = meshComponent.mesh.geometry.type;
+    }
     const message = {
       type: 'osc-send',
       address: emitter.address,
@@ -214,7 +225,7 @@ class OSCSystem extends System {
         { type: 'f', value: transform ? transform.position.x : 0 },
         { type: 'f', value: transform ? transform.position.y : 0 },
         { type: 'f', value: transform ? transform.position.z : 0 },
-        { type: 's', value: primitiveType ? primitiveType.type : 'unknown' },
+        { type: 's', value: primitiveType ? primitiveType : 'unknown' },
         ...Object.entries(emitter.params).map(([key, value]) => ({
           type: typeof value === 'number' ? 'f' : 's',
           value: value
@@ -225,11 +236,12 @@ class OSCSystem extends System {
     try {
       this.ws.send(JSON.stringify(message));
       this.messageCount++;
+      this.eventBus.emit("osc:messages:count:changed", this.messageCount);
 
-      console.log(`Sent OSC message to ${address}:`, args);
+      log(`Sent OSC message to ${emitter.address}:`, message.args);
       return true;
-    } catch (error) {
-      console.error("Error sending OSC message:", error);
+    } catch (err) {
+      error("Error sending OSC message:", err);
       return false;
     }
   }

@@ -1,11 +1,13 @@
 if (import.meta.env.DEV) {
-  localStorage.debug = 'app:world';
+  localStorage.debug = 'app:*, -app:world';
 }
 import * as THREE from 'three';
 import { application } from "./stimulus_application.js";
+// import debug from "debug";
 import ModeController from "./controllers/mode_controller.js";
 import PrimitivesController from "./controllers/primitives_controller.js";
 import StatusController from "./controllers/status_controller.js";
+// import WorldController from "./controllers/world_controller.js";
 
 import { Entity } from "./ecs/core/entity.js";
 import { World } from "./world.js";
@@ -37,6 +39,10 @@ import { createScene } from "./factories/scene.js";
 import { UIManager } from './ui_manager.js';
 import { ViewportClickHandler } from "./event_handlers/viewport_click_handler.js";
 // import { ObjectManager } from './object_manager.js';
+
+
+// const log = debug("app:main");
+// log.log = console.log.bind(console);
 
 class App {
   constructor() {

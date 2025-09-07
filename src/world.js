@@ -13,6 +13,7 @@ import { OSCEmitter } from "./ecs/components/osc_emitter.js";
 import { ThreeMesh } from "./ecs/components/three_mesh.js";
 
 const log = debug("app:world");
+log.log = console.log.bind(console);
 
 class World {
   constructor(container, sceneCollection, cameraCollection, viewCollection) {
@@ -54,7 +55,9 @@ class World {
     if (active) {
       entity = entity.addComponent(new Active());
     }
+    entity.world = this;
     this.entities.add(entity);
+    this.checkEntityForSystems(entity);
     return entity;
   }
 

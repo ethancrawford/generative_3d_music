@@ -1,6 +1,7 @@
 class Entity {
   constructor(){
     this.id = Entity.nextId++;
+    this.world = null;
     this.components = new Map();
   }
 
@@ -9,6 +10,9 @@ class Entity {
   addComponent(component) {
     this.components.set(component.constructor.name, component);
     component.entity = this;
+    if (this.world) {
+      this.world.checkEntityForSystems(this);
+    }
     return this;
   }
 
